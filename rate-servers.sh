@@ -6,6 +6,8 @@ sorted=./work/sorted
 tmp=./work/tmp
 stats=./work/stats
 pingBlockSize=10
+#for now
+region=US
 
 if [ ! -d "./work/" ];
 then
@@ -18,25 +20,26 @@ else
 		echo 'work folder mounted, cleaning...'
 		rm -f ./work/*
 	else
+		echo "work folder exists, mounting tmpfs?"
 		sudo mount -t tmpfs -o size=256m tmpfs ./work/
-		tee mount | grep work
 	fi
 fi
 
 
 echo 'creating server list'
 # US servers here, will add region selection later
-for file in $(ls ./profiles/) #./profiles/*.ovpn
+for file in $(ls ./profiles/ | grep $region) #./profiles/*.ovpn
 do
-	grep '-US-' | grep -o -E "\w+-\w+\.ipvanish.com" -m 1 ./profiles/$file >> $srvlist
+	grep -o -E "\w+-\w+\.ipvanish.com" -m 1 ./profiles/$file >> $srvlist
 done
+# echo $srvlist
 total=$(wc -l $srvlist | grep -oP '\d+') #number of lines in srvlist file
 echo 'pinging servers...'
-for (( block = 0; block <= $total; block=$block+$pingBlockSize )) 
+for (( block = 10; block <= $total; block=$block+$pingBlockSize )) 
 do
 	echo 'block ' $block ' of ' $total
 	tmpsrvlist=$(head -n $block $srvlist| tail| tr '\n' ' ')
-	#echo 'would nping ' $tmpsrvlist
+	echo 'pinging ' $tmpsrvlist
 	nping --delay 200ms -c 3 -H $tmpsrvlist >> $stats
 done
 echo 'done. cleaning up the file.'

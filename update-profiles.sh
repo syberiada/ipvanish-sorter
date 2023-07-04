@@ -9,7 +9,7 @@ if [ -f "./new.zip" ]; then
 	mv new.zip old.zip
 	for file in ~/vpn/profiles/*.ovpn
 	do
-		sed -i '/keysize/d' $file
+		sed -i '/keysize/d' $file # remove keysize line because openvpn no likey
 	done
 echo 'done.'
 fi
